@@ -1,0 +1,28 @@
+# Lightweight Dockerfile for building Windows EXE only
+FROM debian:bullseye-slim
+
+# Install cross-compilation tools for Windows
+RUN apt-get update && apt-get install -y \
+    gcc-mingw-w64-x86-64 \
+    g++-mingw-w64-x86-64 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /build
+
+# Copy source code
+COPY countdown.cpp .
+
+# Compile Windows executable
+RUN x86_64-w64-mingw32-g++ \
+    -std=c++11 \
+    -O2 \
+    -Wall \
+    -static-libgcc \
+    -static-libstdc++ \
+    -static \
+    -o countdown.exe \
+    countdown.cpp
+
+# Verify the executable was created
+RUN ls -la countdown.exe && file countdown.exe
