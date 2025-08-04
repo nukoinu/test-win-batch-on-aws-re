@@ -15,7 +15,12 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building Windows Docker image...
-      # Windows executable should already be built in the source
+      # Use pre-built countdown.exe from execution directory
+      - echo "Using pre-built countdown.exe..."
+      - ls -la execution/
+      - if [ ! -f execution/countdown.exe ]; then echo "Error: countdown.exe not found!" && exit 1; fi
+      - echo "countdown.exe found, copying to image directory..."
+      - cp execution/countdown.exe image/
       - cd image
       - docker build -t $REPOSITORY_URI:latest .
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG .

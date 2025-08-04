@@ -9,9 +9,6 @@ param(
     [string]$Region = "ap-northeast-1",
     
     [Parameter(Mandatory=$false)]
-    [string]$GitHubUsername = "",
-    
-    [Parameter(Mandatory=$false)]
     [string]$RepositoryName = "countdown-test"
 )
 
@@ -142,7 +139,6 @@ Write-InfoMessage "設定ファイルを更新中..."
 # CodeBuild プロジェクト設定の更新
 $projectConfig = Get-Content "codebuild\project.json" -Raw
 $projectConfig = $projectConfig -replace "ACCOUNT_ID", $AccountId
-$projectConfig = $projectConfig -replace "YOUR_GITHUB_USERNAME", $GitHubUsername
 $projectConfig = $projectConfig -replace "countdown-test", $RepositoryName
 $projectConfig | Out-File -FilePath "codebuild\project-updated.json" -Encoding UTF8
 
@@ -188,7 +184,7 @@ Remove-Item -Path "codebuild-service-role-policy-updated.json" -ErrorAction Sile
 Write-ColorMessage "=== セットアップ完了 ==="
 Write-InfoMessage ""
 Write-InfoMessage "次のステップ:"
-Write-InfoMessage "1. GitHubリポジトリにコードをプッシュ"
+Write-InfoMessage "1. プロジェクトアーカイブをS3にアップロード、またはローカルでCodeBuildを実行"
 Write-InfoMessage "2. CodeBuildプロジェクトを手動実行:"
 Write-InfoMessage "   aws codebuild start-build --project-name windows-countdown-build --region $Region"
 Write-InfoMessage ""

@@ -2,9 +2,8 @@
   "name": "windows-countdown-build",
   "description": "Windows countdown executable build and Docker image creation",
   "source": {
-    "type": "GITHUB",
-    "location": "https://github.com/YOUR_GITHUB_USERNAME/test-win-batch-on-aws-re.git",
-    "gitCloneDepth": 1,
+    "type": "S3",
+    "location": "ACCOUNT_ID-codebuild-source/countdown-test-source.zip",
     "buildspec": "buildspec.yml"
   },
   "artifacts": {

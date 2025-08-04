@@ -24,10 +24,8 @@ phases:
       - dir
       - echo "Checking execution directory:"
       - dir execution
-      - echo "Building Windows executable if needed..."
-      # Windows環境でのビルド（MinGW or Visual Studio）
+      - echo "Using pre-built countdown.exe..."
       - cd execution
-      - if exist "build.bat" (call build.bat) else (echo "No build.bat found, assuming countdown.exe is pre-built")
       - if not exist "countdown.exe" (echo "Error: countdown.exe not found!" && exit /b 1)
       - echo "countdown.exe found, copying to image directory..."
       - copy countdown.exe ..\image\
