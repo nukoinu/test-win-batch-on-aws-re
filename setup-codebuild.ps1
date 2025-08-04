@@ -1,9 +1,5 @@
-# AWS CodeBuild & CodeDeploy ã‚¯ã‚¤ãƒƒã‚¯ã‚¹ã‚¿ãƒ¼ãƒˆã‚¹ã‚¯ãƒªãƒ—ãƒˆ
-# Windows PowerShellç”¨ã‚»ãƒƒãƒˆã‚¢ãƒƒãƒ—ã‚¹ã‚¯ãƒªãƒ—ãƒˆ
-
-# PowerShellã®æ–‡å­—ã‚¨ãƒ³ã‚³ãƒ¼ãƒ‡ã‚£ãƒ³ã‚°è¨­å®š
-$OutputEncoding = [System.Text.Encoding]::UTF8
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+# AWS CodeBuild & CodeDeploy ƒNƒCƒbƒNƒXƒ^[ƒgƒXƒNƒŠƒvƒg
+# Windows PowerShell—pƒZƒbƒgƒAƒbƒvƒXƒNƒŠƒvƒg
 
 param(
     [Parameter(Mandatory=$true)]
@@ -16,7 +12,7 @@ param(
     [string]$RepositoryName = "countdown-test"
 )
 
-# è‰²ä»˜ããƒ¡ãƒƒã‚»ãƒ¼ã‚¸å‡ºåŠ›é–¢æ•°
+# F•t‚«ƒƒbƒZ[ƒWo—ÍŠÖ”
 function Write-ColorMessage {
     param([string]$Message, [string]$Color = "Green")
     Write-Host $Message -ForegroundColor $Color
@@ -32,53 +28,53 @@ function Write-InfoMessage {
     Write-Host $Message -ForegroundColor Cyan
 }
 
-Write-ColorMessage "=== AWS CodeBuild & CodeDeploy ã‚»ãƒƒãƒˆã‚¢ãƒƒãƒ—é–‹å§‹ ==="
+Write-ColorMessage "=== AWS CodeBuild & CodeDeploy ƒZƒbƒgƒAƒbƒvŠJn ==="
 
-# AWS CLI ã®ç¢ºèª
-Write-InfoMessage "AWS CLI ãƒãƒ¼ã‚¸ãƒ§ãƒ³ã‚’ç¢ºèªä¸­..."
+# AWS CLI ‚ÌŠm”F
+Write-InfoMessage "AWS CLI ƒo[ƒWƒ‡ƒ“‚ğŠm”F’†..."
 try {
     $awsVersion = aws --version
     Write-ColorMessage "AWS CLI: $awsVersion"
 } catch {
-    Write-ErrorMessage "AWS CLI ãŒã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚å…ˆã«AWS CLIã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ã¦ãã ã•ã„ã€‚"
+    Write-ErrorMessage "AWS CLI ‚ªƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚Ü‚¹‚ñBæ‚ÉAWS CLI‚ğƒCƒ“ƒXƒg[ƒ‹‚µ‚Ä‚­‚¾‚³‚¢B"
     exit 1
 }
 
-# AWSèªè¨¼æƒ…å ±ã®ç¢ºèª
-Write-InfoMessage "AWSèªè¨¼æƒ…å ±ã‚’ç¢ºèªä¸­..."
+# AWS”FØî•ñ‚ÌŠm”F
+Write-InfoMessage "AWS”FØî•ñ‚ğŠm”F’†..."
 try {
     $identityJson = aws sts get-caller-identity --output json
     $identity = $identityJson | ConvertFrom-Json
-    Write-ColorMessage "èªè¨¼æ¸ˆã¿ AWS Account: $($identity.Account)"
-    Write-ColorMessage "èªè¨¼æ¸ˆã¿ User/Role: $($identity.Arn)"
+    Write-ColorMessage "”FØÏ‚İ AWS Account: $($identity.Account)"
+    Write-ColorMessage "”FØÏ‚İ User/Role: $($identity.Arn)"
 } catch {
-    Write-ErrorMessage "AWSèªè¨¼ãŒè¨­å®šã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚'aws configure' ã‚’å®Ÿè¡Œã—ã¦ãã ã•ã„ã€‚"
+    Write-ErrorMessage "AWS”FØ‚ªİ’è‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB'aws configure' ‚ğÀs‚µ‚Ä‚­‚¾‚³‚¢B"
     exit 1
 }
 
-# 1. ECRãƒªãƒã‚¸ãƒˆãƒªä½œæˆ
-Write-InfoMessage "ECRãƒªãƒã‚¸ãƒˆãƒªã‚’ä½œæˆä¸­..."
+# 1. ECRƒŠƒ|ƒWƒgƒŠì¬
+Write-InfoMessage "ECRƒŠƒ|ƒWƒgƒŠ‚ğì¬’†..."
 try {
     aws ecr create-repository --repository-name $RepositoryName --region $Region --output table
-    Write-ColorMessage "ECRãƒªãƒã‚¸ãƒˆãƒª '$RepositoryName' ãŒä½œæˆã•ã‚Œã¾ã—ãŸ"
+    Write-ColorMessage "ECRƒŠƒ|ƒWƒgƒŠ '$RepositoryName' ‚ªì¬‚³‚ê‚Ü‚µ‚½"
 } catch {
-    Write-InfoMessage "ECRãƒªãƒã‚¸ãƒˆãƒªã¯æ—¢ã«å­˜åœ¨ã—ã¦ã„ã‚‹å¯èƒ½æ€§ãŒã‚ã‚Šã¾ã™ï¼ˆã‚¨ãƒ©ãƒ¼ã‚’ç„¡è¦–ï¼‰"
+    Write-InfoMessage "ECRƒŠƒ|ƒWƒgƒŠ‚ÍŠù‚É‘¶İ‚µ‚Ä‚¢‚é‰Â”\«‚ª‚ ‚è‚Ü‚·iƒGƒ‰[‚ğ–³‹j"
 }
 
-# 2. CloudWatch Logs ã‚°ãƒ«ãƒ¼ãƒ—ä½œæˆ
-Write-InfoMessage "CloudWatch Logsã‚°ãƒ«ãƒ¼ãƒ—ã‚’ä½œæˆä¸­..."
+# 2. CloudWatch Logs ƒOƒ‹[ƒvì¬
+Write-InfoMessage "CloudWatch LogsƒOƒ‹[ƒv‚ğì¬’†..."
 try {
     aws logs create-log-group --log-group-name "/ecs/countdown-test" --region $Region
     aws logs create-log-group --log-group-name "/aws/codebuild/windows-countdown-build" --region $Region
-    Write-ColorMessage "CloudWatch Logsã‚°ãƒ«ãƒ¼ãƒ—ãŒä½œæˆã•ã‚Œã¾ã—ãŸ"
+    Write-ColorMessage "CloudWatch LogsƒOƒ‹[ƒv‚ªì¬‚³‚ê‚Ü‚µ‚½"
 } catch {
-    Write-InfoMessage "CloudWatch Logsã‚°ãƒ«ãƒ¼ãƒ—ã¯æ—¢ã«å­˜åœ¨ã—ã¦ã„ã‚‹å¯èƒ½æ€§ãŒã‚ã‚Šã¾ã™ï¼ˆã‚¨ãƒ©ãƒ¼ã‚’ç„¡è¦–ï¼‰"
+    Write-InfoMessage "CloudWatch LogsƒOƒ‹[ƒv‚ÍŠù‚É‘¶İ‚µ‚Ä‚¢‚é‰Â”\«‚ª‚ ‚è‚Ü‚·iƒGƒ‰[‚ğ–³‹j"
 }
 
-# 3. IAMãƒ­ãƒ¼ãƒ«ä½œæˆ
-Write-InfoMessage "IAMãƒ­ãƒ¼ãƒ«ã‚’ä½œæˆä¸­..."
+# 3. IAMƒ[ƒ‹ì¬
+Write-InfoMessage "IAMƒ[ƒ‹‚ğì¬’†..."
 
-# CodeBuild ã‚µãƒ¼ãƒ“ã‚¹ãƒ­ãƒ¼ãƒ«ç”¨ä¿¡é ¼ãƒãƒªã‚·ãƒ¼
+# CodeBuild ƒT[ƒrƒXƒ[ƒ‹—pM—Šƒ|ƒŠƒV[
 $codeBuildTrustPolicy = @"
 {
   "Version": "2012-10-17",
@@ -94,29 +90,29 @@ $codeBuildTrustPolicy = @"
 }
 "@
 
-# CodeBuild ã‚µãƒ¼ãƒ“ã‚¹ãƒ­ãƒ¼ãƒ«ä½œæˆ
+# CodeBuild ƒT[ƒrƒXƒ[ƒ‹ì¬
 try {
-    $codeBuildTrustPolicy | Out-File -FilePath "codebuild-trust-policy.json" -Encoding UTF8 -NoNewline
+    $codeBuildTrustPolicy | Out-File -FilePath "codebuild-trust-policy.json" -Encoding UTF8
     aws iam create-role --role-name "codebuild-windows-countdown-service-role" --assume-role-policy-document file://codebuild-trust-policy.json --region $Region
-    Write-ColorMessage "CodeBuild ã‚µãƒ¼ãƒ“ã‚¹ãƒ­ãƒ¼ãƒ«ãŒä½œæˆã•ã‚Œã¾ã—ãŸ"
+    Write-ColorMessage "CodeBuild ƒT[ƒrƒXƒ[ƒ‹‚ªì¬‚³‚ê‚Ü‚µ‚½"
     
-    # ãƒãƒªã‚·ãƒ¼ã®ã‚¢ã‚¿ãƒƒãƒï¼ˆè¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ã‚’æ›´æ–°ï¼‰
+    # ƒ|ƒŠƒV[‚ÌƒAƒ^ƒbƒ`iİ’èƒtƒ@ƒCƒ‹‚ğXVj
     $policyContent = Get-Content "codebuild\codebuild-service-role-policy.json" -Raw -Encoding UTF8
     $policyContent = $policyContent -replace "ACCOUNT_ID", $AccountId
-    $policyContent | Out-File -FilePath "codebuild-service-role-policy-updated.json" -Encoding UTF8 -NoNewline
+    $policyContent | Out-File -FilePath "codebuild-service-role-policy-updated.json" -Encoding UTF8
     
     aws iam put-role-policy --role-name "codebuild-windows-countdown-service-role" --policy-name "CodeBuildServiceRolePolicy" --policy-document file://codebuild-service-role-policy-updated.json
-    Write-ColorMessage "CodeBuild ã‚µãƒ¼ãƒ“ã‚¹ãƒ­ãƒ¼ãƒ«ã«ãƒãƒªã‚·ãƒ¼ãŒã‚¢ã‚¿ãƒƒãƒã•ã‚Œã¾ã—ãŸ"
+    Write-ColorMessage "CodeBuild ƒT[ƒrƒXƒ[ƒ‹‚Éƒ|ƒŠƒV[‚ªƒAƒ^ƒbƒ`‚³‚ê‚Ü‚µ‚½"
 } catch {
-    Write-InfoMessage "IAMãƒ­ãƒ¼ãƒ«ã¯æ—¢ã«å­˜åœ¨ã—ã¦ã„ã‚‹å¯èƒ½æ€§ãŒã‚ã‚Šã¾ã™ï¼ˆã‚¨ãƒ©ãƒ¼ã‚’ç„¡è¦–ï¼‰"
+    Write-InfoMessage "IAMƒ[ƒ‹‚ÍŠù‚É‘¶İ‚µ‚Ä‚¢‚é‰Â”\«‚ª‚ ‚è‚Ü‚·iƒGƒ‰[‚ğ–³‹j"
 }
 
-# ECS Task Execution Role (æ—¢å­˜ã®å ´åˆã¯ã‚¹ã‚­ãƒƒãƒ—)
+# ECS Task Execution Role (Šù‘¶‚Ìê‡‚ÍƒXƒLƒbƒv)
 try {
     aws iam get-role --role-name ecsTaskExecutionRole --region $Region > $null
-    Write-InfoMessage "ecsTaskExecutionRole ã¯æ—¢ã«å­˜åœ¨ã—ã¾ã™"
+    Write-InfoMessage "ecsTaskExecutionRole ‚ÍŠù‚É‘¶İ‚µ‚Ü‚·"
 } catch {
-    Write-InfoMessage "ecsTaskExecutionRole ã‚’ä½œæˆä¸­..."
+    Write-InfoMessage "ecsTaskExecutionRole ‚ğì¬’†..."
     $ecsTaskTrustPolicy = @"
 {
   "Version": "2012-10-17",
@@ -132,73 +128,70 @@ try {
 }
 "@
     
-    $ecsTaskTrustPolicy | Out-File -FilePath "ecs-task-trust-policy.json" -Encoding UTF8 -NoNewline
+    $ecsTaskTrustPolicy | Out-File -FilePath "ecs-task-trust-policy.json" -Encoding UTF8
     aws iam create-role --role-name "ecsTaskExecutionRole" --assume-role-policy-document file://ecs-task-trust-policy.json --region $Region
     aws iam attach-role-policy --role-name "ecsTaskExecutionRole" --policy-arn "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy" --region $Region
-    Write-ColorMessage "ecsTaskExecutionRole ãŒä½œæˆã•ã‚Œã¾ã—ãŸ"
+    Write-ColorMessage "ecsTaskExecutionRole ‚ªì¬‚³‚ê‚Ü‚µ‚½"
 }
 
-# 4. è¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ã®æ›´æ–°
-Write-InfoMessage "è¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ã‚’æ›´æ–°ä¸­..."
+# 4. İ’èƒtƒ@ƒCƒ‹‚ÌXV
+Write-InfoMessage "İ’èƒtƒ@ƒCƒ‹‚ğXV’†..."
 
-# CodeBuild ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆè¨­å®šã®æ›´æ–°
+# CodeBuild ƒvƒƒWƒFƒNƒgİ’è‚ÌXV
 $projectConfig = Get-Content "codebuild\project.json" -Raw -Encoding UTF8
 $projectConfig = $projectConfig -replace "ACCOUNT_ID", $AccountId
 $projectConfig = $projectConfig -replace "countdown-test", $RepositoryName
-$projectConfig | Out-File -FilePath "codebuild\project-updated.json" -Encoding UTF8 -NoNewline
+$projectConfig | Out-File -FilePath "codebuild\project-updated.json" -Encoding UTF8
 
-# ECS ã‚¿ã‚¹ã‚¯å®šç¾©ã®æ›´æ–°
+# ECS ƒ^ƒXƒN’è‹`‚ÌXV
 $taskDefinition = Get-Content "ecs\task-definition.json" -Raw -Encoding UTF8
 $taskDefinition = $taskDefinition -replace "ACCOUNT_ID", $AccountId
 $taskDefinition = $taskDefinition -replace "countdown-test", $RepositoryName
-$taskDefinition | Out-File -FilePath "ecs\task-definition-updated.json" -Encoding UTF8 -NoNewline
+$taskDefinition | Out-File -FilePath "ecs\task-definition-updated.json" -Encoding UTF8
 
-# buildspec.yml ã®æ›´æ–°ï¼ˆãƒªãƒã‚¸ãƒˆãƒªURIã®è¨­å®šï¼‰
+# buildspec.yml ‚ÌXViƒŠƒ|ƒWƒgƒŠURI‚Ìİ’èj
 $buildspec = Get-Content "buildspec.yml" -Raw -Encoding UTF8
 $repositoryUri = "$AccountId.dkr.ecr.$Region.amazonaws.com/$RepositoryName"
-# buildspec.yml ã«ã¯ç’°å¢ƒå¤‰æ•°ã¨ã—ã¦è¨­å®šã•ã‚Œã‚‹ã®ã§ã€ã“ã“ã§ã¯å¤‰æ›´ä¸è¦
+# buildspec.yml ‚É‚ÍŠÂ‹«•Ï”‚Æ‚µ‚Äİ’è‚³‚ê‚é‚Ì‚ÅA‚±‚±‚Å‚Í•ÏX•s—v
 
-Write-ColorMessage "è¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ãŒæ›´æ–°ã•ã‚Œã¾ã—ãŸ"
+Write-ColorMessage "İ’èƒtƒ@ƒCƒ‹‚ªXV‚³‚ê‚Ü‚µ‚½"
 
-# 5. CodeBuildãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆä½œæˆ
-Write-InfoMessage "CodeBuildãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’ä½œæˆä¸­..."
+# 5. CodeBuildƒvƒƒWƒFƒNƒgì¬
+Write-InfoMessage "CodeBuildƒvƒƒWƒFƒNƒg‚ğì¬’†..."
 try {
     aws codebuild create-project --cli-input-json file://codebuild/project-updated.json --region $Region
-    Write-ColorMessage "CodeBuildãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆ 'windows-countdown-build' ãŒä½œæˆã•ã‚Œã¾ã—ãŸ"
+    Write-ColorMessage "CodeBuildƒvƒƒWƒFƒNƒg 'windows-countdown-build' ‚ªì¬‚³‚ê‚Ü‚µ‚½"
 } catch {
-    Write-InfoMessage "CodeBuildãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã¯æ—¢ã«å­˜åœ¨ã—ã¦ã„ã‚‹å¯èƒ½æ€§ãŒã‚ã‚Šã¾ã™ï¼ˆã‚¨ãƒ©ãƒ¼ã‚’ç„¡è¦–ï¼‰"
+    Write-InfoMessage "CodeBuildƒvƒƒWƒFƒNƒg‚ÍŠù‚É‘¶İ‚µ‚Ä‚¢‚é‰Â”\«‚ª‚ ‚è‚Ü‚·iƒGƒ‰[‚ğ–³‹j"
 }
 
-# 6. ECSã‚¯ãƒ©ã‚¹ã‚¿ã®ç¢ºèªãƒ»ä½œæˆ
-Write-InfoMessage "ECSã‚¯ãƒ©ã‚¹ã‚¿ã‚’ç¢ºèªä¸­..."
+# 6. ECSƒNƒ‰ƒXƒ^‚ÌŠm”FEì¬
+Write-InfoMessage "ECSƒNƒ‰ƒXƒ^‚ğŠm”F’†..."
 try {
     aws ecs describe-clusters --clusters "windows-batch-test-cluster" --region $Region > $null
-    Write-InfoMessage "ECSã‚¯ãƒ©ã‚¹ã‚¿ 'windows-batch-test-cluster' ã¯æ—¢ã«å­˜åœ¨ã—ã¾ã™"
+    Write-InfoMessage "ECSƒNƒ‰ƒXƒ^ 'windows-batch-test-cluster' ‚ÍŠù‚É‘¶İ‚µ‚Ü‚·"
 } catch {
-    Write-InfoMessage "ECSã‚¯ãƒ©ã‚¹ã‚¿ã‚’ä½œæˆä¸­..."
+    Write-InfoMessage "ECSƒNƒ‰ƒXƒ^‚ğì¬’†..."
     aws ecs create-cluster --cluster-name "windows-batch-test-cluster" --region $Region
-    Write-ColorMessage "ECSã‚¯ãƒ©ã‚¹ã‚¿ 'windows-batch-test-cluster' ãŒä½œæˆã•ã‚Œã¾ã—ãŸ"
+    Write-ColorMessage "ECSƒNƒ‰ƒXƒ^ 'windows-batch-test-cluster' ‚ªì¬‚³‚ê‚Ü‚µ‚½"
 }
 
-# 7. ä¸€æ™‚ãƒ•ã‚¡ã‚¤ãƒ«ã®å‰Šé™¤
-Write-InfoMessage "ä¸€æ™‚ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å‰Šé™¤ä¸­..."
+# 7. ˆêƒtƒ@ƒCƒ‹‚Ìíœ
+Write-InfoMessage "ˆêƒtƒ@ƒCƒ‹‚ğíœ’†..."
 Remove-Item -Path "codebuild-trust-policy.json" -ErrorAction SilentlyContinue
 Remove-Item -Path "ecs-task-trust-policy.json" -ErrorAction SilentlyContinue
 Remove-Item -Path "codebuild-service-role-policy-updated.json" -ErrorAction SilentlyContinue
 
-Write-ColorMessage "=== ã‚»ãƒƒãƒˆã‚¢ãƒƒãƒ—å®Œäº† ==="
+Write-ColorMessage "=== ƒZƒbƒgƒAƒbƒvŠ®—¹ ==="
 Write-InfoMessage ""
-Write-InfoMessage "æ¬¡ã®ã‚¹ãƒ†ãƒƒãƒ—:"
-Write-InfoMessage "1. ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚¢ãƒ¼ã‚«ã‚¤ãƒ–ã‚’S3ã«ã‚¢ãƒƒãƒ—ãƒ­ãƒ¼ãƒ‰ã€ã¾ãŸã¯ãƒ­ãƒ¼ã‚«ãƒ«ã§CodeBuildã‚’å®Ÿè¡Œ"
-Write-InfoMessage "2. CodeBuildãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’æ‰‹å‹•å®Ÿè¡Œ:"
+Write-InfoMessage "Ÿ‚ÌƒXƒeƒbƒv:"
+Write-InfoMessage "1. ƒvƒƒWƒFƒNƒgƒA[ƒJƒCƒu‚ğS3‚ÉƒAƒbƒvƒ[ƒhA‚Ü‚½‚Íƒ[ƒJƒ‹‚ÅCodeBuild‚ğÀs"
+Write-InfoMessage "2. CodeBuildƒvƒƒWƒFƒNƒg‚ğè“®Às:"
 Write-InfoMessage "   aws codebuild start-build --project-name windows-countdown-build --region $Region"
 Write-InfoMessage ""
-Write-InfoMessage "3. ECSã‚¿ã‚¹ã‚¯å®šç¾©ã‚’ç™»éŒ²:"
+Write-InfoMessage "3. ECSƒ^ƒXƒN’è‹`‚ğ“o˜^:"
 Write-InfoMessage "   aws ecs register-task-definition --cli-input-json file://ecs/task-definition-updated.json --region $Region"
 Write-InfoMessage ""
-Write-InfoMessage "4. ECRãƒªãƒã‚¸ãƒˆãƒªURI: $repositoryUri"
+Write-InfoMessage "4. ECRƒŠƒ|ƒWƒgƒŠURI: $repositoryUri"
 Write-InfoMessage ""
-Write-ColorMessage "ã‚»ãƒƒãƒˆã‚¢ãƒƒãƒ—ãŒæ­£å¸¸ã«å®Œäº†ã—ã¾ã—ãŸï¼"
-
-# æ³¨æ„: ã“ã®ã‚¹ã‚¯ãƒªãƒ—ãƒˆã¯BOMä»˜ãUTF-8ã§ä¿å­˜ã—ã¦ãã ã•ã„
-# åˆ¥ç’°å¢ƒã§å®Ÿè¡Œã™ã‚‹å ´åˆã¯ã€æ–‡å­—ã‚¨ãƒ³ã‚³ãƒ¼ãƒ‡ã‚£ãƒ³ã‚°ã®è¨­å®šã‚’ç¢ºèªã—ã¦ãã ã•ã„
+Write-ColorMessage "ƒZƒbƒgƒAƒbƒv‚ª³í‚ÉŠ®—¹‚µ‚Ü‚µ‚½I"
