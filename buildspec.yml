@@ -17,10 +17,10 @@ phases:
       - echo Building Windows Docker image...
       # Use pre-built countdown.exe from execution directory
       - echo "Using pre-built countdown.exe..."
-      - ls -la execution/
-      - if [ ! -f execution/countdown.exe ]; then echo "Error: countdown.exe not found!" && exit 1; fi
+      - dir execution\
+      - powershell -Command "if (!(Test-Path 'execution\countdown.exe')) { Write-Host 'Error: countdown.exe not found!'; exit 1 }"
       - echo "countdown.exe found, copying to image directory..."
-      - cp execution/countdown.exe image/
+      - copy execution\countdown.exe image\
       - cd image
       - docker build -t $REPOSITORY_URI:latest .
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
