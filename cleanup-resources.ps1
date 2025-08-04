@@ -9,6 +9,9 @@ param(
     [string]$RepositoryName = "countdown-test",
     
     [Parameter(Mandatory=$false)]
+    [string]$ProjectName = "windows-countdown-build",
+    
+    [Parameter(Mandatory=$false)]
     [switch]$Delete = $false,
     
     [Parameter(Mandatory=$false)]
@@ -39,6 +42,7 @@ function Write-WarningMessage {
 Write-ColorMessage "=== AWS リソース確認・削除ツール ==="
 Write-InfoMessage "Region: $Region"
 Write-InfoMessage "Repository: $RepositoryName"
+Write-InfoMessage "Project: $ProjectName"
 
 if ($Delete) {
     Write-WarningMessage "削除モードが有効です。リソースが削除されます。"
@@ -80,7 +84,7 @@ try {
 # 2. CloudWatch Logsグループの確認・削除
 Write-InfoMessage ""
 Write-InfoMessage "=== CloudWatch Logs グループ ==="
-$logGroups = @("/ecs/countdown-test", "/aws/codebuild/windows-countdown-build")
+$logGroups = @("/ecs/$RepositoryName", "/aws/codebuild/$ProjectName")
 
 foreach ($logGroup in $logGroups) {
     try {
@@ -111,7 +115,7 @@ foreach ($logGroup in $logGroups) {
 # 3. IAMロールの確認・削除
 Write-InfoMessage ""
 Write-InfoMessage "=== IAMロール ==="
-$roles = @("codebuild-windows-countdown-service-role", "ecsTaskExecutionRole")
+$roles = @("codebuild-$ProjectName-service-role", "ecsTaskExecutionRole")
 
 foreach ($roleName in $roles) {
     try {
@@ -157,26 +161,25 @@ foreach ($roleName in $roles) {
 # 4. CodeBuildプロジェクトの確認・削除
 Write-InfoMessage ""
 Write-InfoMessage "=== CodeBuildプロジェクト ==="
-$projectName = "windows-countdown-build"
 try {
-    $project = aws codebuild batch-get-projects --names $projectName --region $Region --output json 2>$null | ConvertFrom-Json
+    $project = aws codebuild batch-get-projects --names $ProjectName --region $Region --output json 2>$null | ConvertFrom-Json
     if ($project.projects -and $project.projects.Count -gt 0) {
-        Write-ColorMessage "✓ CodeBuildプロジェクト '$projectName' が存在します"
+        Write-ColorMessage "✓ CodeBuildプロジェクト '$ProjectName' が存在します"
         $proj = $project.projects[0]
         Write-Host "  ARN: $($proj.arn)"
         Write-Host "  作成日: $($proj.created)"
         Write-Host "  サービスロール: $($proj.serviceRole)"
         
         if ($Delete) {
-            Write-WarningMessage "CodeBuildプロジェクト '$projectName' を削除中..."
-            aws codebuild delete-project --name $projectName --region $Region
+            Write-WarningMessage "CodeBuildプロジェクト '$ProjectName' を削除中..."
+            aws codebuild delete-project --name $ProjectName --region $Region
             Write-ColorMessage "CodeBuildプロジェクトが削除されました"
         }
     } else {
-        Write-InfoMessage "CodeBuildプロジェクト '$projectName' は存在しません"
+        Write-InfoMessage "CodeBuildプロジェクト '$ProjectName' は存在しません"
     }
 } catch {
-    Write-InfoMessage "CodeBuildプロジェクト '$projectName' は存在しません"
+    Write-InfoMessage "CodeBuildプロジェクト '$ProjectName' は存在しません"
 }
 
 # 5. ECSクラスタの確認・削除
@@ -198,7 +201,7 @@ try {
             
             # タスク定義の登録解除（最新10バージョン）
             try {
-                $taskDefs = aws ecs list-task-definitions --family-prefix countdown-test --region $Region --output json 2>$null | ConvertFrom-Json
+                $taskDefs = aws ecs list-task-definitions --family-prefix $RepositoryName --region $Region --output json 2>$null | ConvertFrom-Json
                 if ($taskDefs.taskDefinitionArns) {
                     foreach ($taskDefArn in $taskDefs.taskDefinitionArns | Select-Object -Last 10) {
                         aws ecs deregister-task-definition --task-definition $taskDefArn --region $Region > $null
