@@ -14,7 +14,7 @@ WORKDIR /build
 COPY countdown.cpp .
 
 # Compile Windows executable
-RUN x86_64-w64-mingw32-g++ \
+RUN x86_64-w64-mingw32-g++-posix \
     -std=c++11 \
     -O2 \
     -Wall \
@@ -25,4 +25,4 @@ RUN x86_64-w64-mingw32-g++ \
     countdown.cpp
 
 # Verify the executable was created
-RUN ls -la countdown.exe && file countdown.exe
+RUN ls -la countdown.exe
