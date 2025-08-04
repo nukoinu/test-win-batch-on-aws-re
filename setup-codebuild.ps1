@@ -1,6 +1,10 @@
 # AWS CodeBuild & CodeDeploy クイックスタートスクリプト
 # Windows PowerShell用セットアップスクリプト
 
+# PowerShellの文字エンコーディング設定
+$OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
 param(
     [Parameter(Mandatory=$true)]
     [string]$AccountId,
@@ -43,7 +47,8 @@ try {
 # AWS認証情報の確認
 Write-InfoMessage "AWS認証情報を確認中..."
 try {
-    $identity = aws sts get-caller-identity --output json | ConvertFrom-Json
+    $identityJson = aws sts get-caller-identity --output json
+    $identity = $identityJson | ConvertFrom-Json
     Write-ColorMessage "認証済み AWS Account: $($identity.Account)"
     Write-ColorMessage "認証済み User/Role: $($identity.Arn)"
 } catch {
@@ -91,14 +96,14 @@ $codeBuildTrustPolicy = @"
 
 # CodeBuild サービスロール作成
 try {
-    $codeBuildTrustPolicy | Out-File -FilePath "codebuild-trust-policy.json" -Encoding UTF8
+    $codeBuildTrustPolicy | Out-File -FilePath "codebuild-trust-policy.json" -Encoding UTF8 -NoNewline
     aws iam create-role --role-name "codebuild-windows-countdown-service-role" --assume-role-policy-document file://codebuild-trust-policy.json --region $Region
     Write-ColorMessage "CodeBuild サービスロールが作成されました"
     
     # ポリシーのアタッチ（設定ファイルを更新）
-    $policyContent = Get-Content "codebuild\codebuild-service-role-policy.json" -Raw
+    $policyContent = Get-Content "codebuild\codebuild-service-role-policy.json" -Raw -Encoding UTF8
     $policyContent = $policyContent -replace "ACCOUNT_ID", $AccountId
-    $policyContent | Out-File -FilePath "codebuild-service-role-policy-updated.json" -Encoding UTF8
+    $policyContent | Out-File -FilePath "codebuild-service-role-policy-updated.json" -Encoding UTF8 -NoNewline
     
     aws iam put-role-policy --role-name "codebuild-windows-countdown-service-role" --policy-name "CodeBuildServiceRolePolicy" --policy-document file://codebuild-service-role-policy-updated.json
     Write-ColorMessage "CodeBuild サービスロールにポリシーがアタッチされました"
@@ -127,7 +132,7 @@ try {
 }
 "@
     
-    $ecsTaskTrustPolicy | Out-File -FilePath "ecs-task-trust-policy.json" -Encoding UTF8
+    $ecsTaskTrustPolicy | Out-File -FilePath "ecs-task-trust-policy.json" -Encoding UTF8 -NoNewline
     aws iam create-role --role-name "ecsTaskExecutionRole" --assume-role-policy-document file://ecs-task-trust-policy.json --region $Region
     aws iam attach-role-policy --role-name "ecsTaskExecutionRole" --policy-arn "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy" --region $Region
     Write-ColorMessage "ecsTaskExecutionRole が作成されました"
@@ -137,19 +142,19 @@ try {
 Write-InfoMessage "設定ファイルを更新中..."
 
 # CodeBuild プロジェクト設定の更新
-$projectConfig = Get-Content "codebuild\project.json" -Raw
+$projectConfig = Get-Content "codebuild\project.json" -Raw -Encoding UTF8
 $projectConfig = $projectConfig -replace "ACCOUNT_ID", $AccountId
 $projectConfig = $projectConfig -replace "countdown-test", $RepositoryName
-$projectConfig | Out-File -FilePath "codebuild\project-updated.json" -Encoding UTF8
+$projectConfig | Out-File -FilePath "codebuild\project-updated.json" -Encoding UTF8 -NoNewline
 
 # ECS タスク定義の更新
-$taskDefinition = Get-Content "ecs\task-definition.json" -Raw
+$taskDefinition = Get-Content "ecs\task-definition.json" -Raw -Encoding UTF8
 $taskDefinition = $taskDefinition -replace "ACCOUNT_ID", $AccountId
 $taskDefinition = $taskDefinition -replace "countdown-test", $RepositoryName
-$taskDefinition | Out-File -FilePath "ecs\task-definition-updated.json" -Encoding UTF8
+$taskDefinition | Out-File -FilePath "ecs\task-definition-updated.json" -Encoding UTF8 -NoNewline
 
 # buildspec.yml の更新（リポジトリURIの設定）
-$buildspec = Get-Content "buildspec.yml" -Raw
+$buildspec = Get-Content "buildspec.yml" -Raw -Encoding UTF8
 $repositoryUri = "$AccountId.dkr.ecr.$Region.amazonaws.com/$RepositoryName"
 # buildspec.yml には環境変数として設定されるので、ここでは変更不要
 
@@ -194,3 +199,6 @@ Write-InfoMessage ""
 Write-InfoMessage "4. ECRリポジトリURI: $repositoryUri"
 Write-InfoMessage ""
 Write-ColorMessage "セットアップが正常に完了しました！"
+
+# 注意: このスクリプトはBOM付きUTF-8で保存してください
+# 別環境で実行する場合は、文字エンコーディングの設定を確認してください
