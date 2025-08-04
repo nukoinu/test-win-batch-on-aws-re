@@ -1,16 +1,15 @@
 # AWS CodeBuild & CodeDeploy クイックスタートスクリプト
-# Windows PowerShell用セットアップスクリプト
+# 【廃止】このスクリプトは廃止されました
+# 手動セットアップ手順を使用してください: docs/手動セットアップ手順.md
 
-param(
-    [Parameter(Mandatory=$true)]
-    [string]$AccountId,
-    
-    [Parameter(Mandatory=$false)]
-    [string]$Region = "ap-northeast-1",
-    
-    [Parameter(Mandatory=$false)]
-    [string]$RepositoryName = "countdown-test"
-)
+Write-Host "このスクリプトは廃止されました。" -ForegroundColor Red
+Write-Host "手動セットアップ手順を使用してください:" -ForegroundColor Yellow
+Write-Host "  docs/手動セットアップ手順.md" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "リソースの確認・削除には以下のツールを使用してください:" -ForegroundColor Yellow
+Write-Host "  .\cleanup-resources.ps1          # リソース確認" -ForegroundColor Cyan
+Write-Host "  .\cleanup-resources.ps1 -Delete  # リソース削除" -ForegroundColor Cyan
+exit 1
 
 # 色付きメッセージ出力関数
 function Write-ColorMessage {

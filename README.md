@@ -35,36 +35,25 @@ test-win-batch-on-aws-re/
 
 ## クイックスタート
 
-### AWS CodeBuild を使用した自動ビルド・デプロイ（推奨）
+### 手動セットアップ（推奨）
 
-LinuxでWindowsコンテナイメージをビルドできない問題を解決するため、AWS CodeBuildを使用します。
+自動セットアップスクリプトは廃止されました。詳細な手動手順については以下を参照してください：
 
-#### 1. 前提条件
+📋 **[手動セットアップ手順](docs/手動セットアップ手順.md)** - AWS CodeBuild・ECS環境の段階的構築手順
 
-- **AWS CLI v2**
-- **PowerShell** (Windows環境)
-- **AWS IAM権限** (ECR、CodeBuild、ECS、CloudWatch Logs)
-- **AWSリージョン**: ap-northeast-1 (東京リージョン)
+### リソース管理ツール
 
-#### 2. 自動セットアップ実行
+作成したAWSリソースの確認・削除には専用ツールを使用できます：
 
 ```powershell
-# セットアップスクリプトを実行（アカウントIDは必須）
-.\setup-codebuild.ps1 -AccountId "YOUR_AWS_ACCOUNT_ID" -GitHubUsername "your-github-username"
-```
+# リソース確認
+.\cleanup-resources.ps1
 
-#### 3. ビルド実行
+# リソース削除（確認あり）
+.\cleanup-resources.ps1 -Delete
 
-```powershell
-# CodeBuildプロジェクトを手動実行
-aws codebuild start-build --project-name windows-countdown-build --region ap-northeast-1
-```
-
-#### 4. ECSへのデプロイ
-
-```powershell
-# タスク定義を登録
-aws ecs register-task-definition --cli-input-json file://ecs/task-definition-updated.json --region ap-northeast-1
+# リソース削除（確認なし）
+.\cleanup-resources.ps1 -Delete -Force
 ```
 
 ### 従来の手動ビルド方法（ローカルWindows環境）
