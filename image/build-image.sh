@@ -46,6 +46,11 @@ if [ ! -f "../execution/countdown.exe" ]; then
     popd
 fi
 
+# Copy required files to current directory for Docker build context
+echo "Copying files for Docker build context..."
+cp "../execution/countdown.exe" .
+cp "../execution/countdown.cpp" .
+
 echo "Building Docker image..."
 echo "Image: $IMAGE_NAME:$IMAGE_TAG"
 echo "Dockerfile: $DOCKERFILE"
@@ -53,6 +58,12 @@ echo
 
 # Build the Docker image
 docker build -f "$DOCKERFILE" -t "$IMAGE_NAME:$IMAGE_TAG" .
+
+# Clean up copied files
+cleanup() {
+    rm -f countdown.exe countdown.cpp
+}
+trap cleanup EXIT
 
 echo
 echo "=========================================="

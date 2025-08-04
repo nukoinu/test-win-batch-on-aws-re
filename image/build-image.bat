@@ -51,6 +51,11 @@ if not exist "..\execution\countdown.exe" (
     popd
 )
 
+REM Copy required files to current directory for Docker build context
+echo Copying files for Docker build context...
+copy "..\execution\countdown.exe" . >nul
+copy "..\execution\countdown.cpp" . >nul
+
 echo Building Docker image...
 echo Image: %IMAGE_NAME%:%IMAGE_TAG%
 echo Dockerfile: %DOCKERFILE%
@@ -60,6 +65,15 @@ REM Build the Docker image
 docker build -f %DOCKERFILE% -t %IMAGE_NAME%:%IMAGE_TAG% .
 if errorlevel 1 (
     echo Error: Docker build failed
+    goto cleanup
+)
+
+REM Clean up copied files
+:cleanup
+if exist "countdown.exe" del "countdown.exe" >nul 2>&1
+if exist "countdown.cpp" del "countdown.cpp" >nul 2>&1
+
+if errorlevel 1 (
     exit /b 1
 )
 
