@@ -1,0 +1,56 @@
+# Windows専用 buildspec for CodeBuild
+# Windows Server 2019 Container環境でのDockerイメージビルド
+
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "Build started on %date% %time%"
+      - echo "Logging in to Amazon ECR..."
+      - aws --version
+      - echo "Logging in to ECR repository %REPOSITORY_URI%"
+      - for /f "tokens=*" %%i in ('aws ecr get-login-password --region %AWS_DEFAULT_REGION%') do set ECR_PASSWORD=%%i
+      - echo %ECR_PASSWORD% | docker login --username AWS --password-stdin %REPOSITORY_URI%
+      - echo "Repository login completed"
+      - set IMAGE_TAG=%CODEBUILD_RESOLVED_SOURCE_VERSION:~0,7%
+      - echo "Image tag will be %IMAGE_TAG%"
+      
+  build:
+    commands:
+      - echo "Build phase started on %date% %time%"
+      - echo "Building Windows Docker image..."
+      - echo "Current directory:"
+      - dir
+      - echo "Checking execution directory:"
+      - dir execution
+      - echo "Building Windows executable if needed..."
+      # Windows環境でのビルド（MinGW or Visual Studio）
+      - cd execution
+      - if exist "build.bat" (call build.bat) else (echo "No build.bat found, assuming countdown.exe is pre-built")
+      - if not exist "countdown.exe" (echo "Error: countdown.exe not found!" && exit /b 1)
+      - echo "countdown.exe found, copying to image directory..."
+      - copy countdown.exe ..\image\
+      - cd ..\image
+      - echo "Building Docker image..."
+      - docker build -t %REPOSITORY_URI%:latest .
+      - docker build -t %REPOSITORY_URI%:%IMAGE_TAG% .
+      - echo "Build completed on %date% %time%"
+      
+  post_build:
+    commands:
+      - echo "Post build phase started on %date% %time%"
+      - echo "Pushing Docker images to ECR..."
+      - docker push %REPOSITORY_URI%:latest
+      - docker push %REPOSITORY_URI%:%IMAGE_TAG%
+      - echo "Creating image definitions file..."
+      - echo [{"name":"countdown-container","imageUri":"%REPOSITORY_URI%:%IMAGE_TAG%"}] > imagedefinitions.json
+      - echo "Image definitions file created:"
+      - type imagedefinitions.json
+      - echo "Post build completed on %date% %time%"
+
+artifacts:
+  files:
+    - imagedefinitions.json
+    - '**/*'
+  name: BuildArtifact

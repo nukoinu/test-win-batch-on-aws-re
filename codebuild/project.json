@@ -1,0 +1,55 @@
+{
+  "name": "windows-countdown-build",
+  "description": "Windows countdown executable build and Docker image creation",
+  "source": {
+    "type": "GITHUB",
+    "location": "https://github.com/YOUR_GITHUB_USERNAME/test-win-batch-on-aws-re.git",
+    "gitCloneDepth": 1,
+    "buildspec": "buildspec.yml"
+  },
+  "artifacts": {
+    "type": "NO_ARTIFACTS"
+  },
+  "environment": {
+    "type": "WINDOWS_SERVER_2022_CONTAINER",
+    "image": "mcr.microsoft.com/windows/servercore:ltsc2022",
+    "computeType": "BUILD_GENERAL1_LARGE",
+    "privilegedMode": true,
+    "environmentVariables": [
+      {
+        "name": "AWS_DEFAULT_REGION",
+        "value": "ap-northeast-1",
+        "type": "PLAINTEXT"
+      },
+      {
+        "name": "REPOSITORY_URI",
+        "value": "ACCOUNT_ID.dkr.ecr.ap-northeast-1.amazonaws.com/countdown-test",
+        "type": "PLAINTEXT"
+      },
+      {
+        "name": "AWS_ACCOUNT_ID",
+        "value": "ACCOUNT_ID",
+        "type": "PLAINTEXT"
+      }
+    ]
+  },
+  "serviceRole": "arn:aws:iam::ACCOUNT_ID:role/service-role/codebuild-windows-countdown-service-role",
+  "timeoutInMinutes": 30,
+  "badgeEnabled": true,
+  "logsConfig": {
+    "cloudWatchLogs": {
+      "status": "ENABLED",
+      "groupName": "/aws/codebuild/windows-countdown-build"
+    }
+  },
+  "tags": [
+    {
+      "key": "Environment",
+      "value": "CI"
+    },
+    {
+      "key": "Application",
+      "value": "countdown-test"
+    }
+  ]
+}

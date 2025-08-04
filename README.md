@@ -35,15 +35,48 @@ test-win-batch-on-aws-re/
 
 ## クイックスタート
 
-### 1. 前提条件
+### AWS CodeBuild を使用した自動ビルド・デプロイ（推奨）
 
-- **Docker Desktop** (Windows containers対応)
+LinuxでWindowsコンテナイメージをビルドできない問題を解決するため、AWS CodeBuildを使用します。
+
+#### 1. 前提条件
+
 - **AWS CLI v2**
-- **MinGW-w64** または **w64devkit** (Windowsローカルビルド用)
 - **PowerShell** (Windows環境)
+- **AWS IAM権限** (ECR、CodeBuild、ECS、CloudWatch Logs)
 - **AWSリージョン**: ap-northeast-1 (東京リージョン)
 
-### 2. テスト実行ファイルのビルド
+#### 2. 自動セットアップ実行
+
+```powershell
+# セットアップスクリプトを実行（アカウントIDは必須）
+.\setup-codebuild.ps1 -AccountId "YOUR_AWS_ACCOUNT_ID" -GitHubUsername "your-github-username"
+```
+
+#### 3. ビルド実行
+
+```powershell
+# CodeBuildプロジェクトを手動実行
+aws codebuild start-build --project-name windows-countdown-build --region ap-northeast-1
+```
+
+#### 4. ECSへのデプロイ
+
+```powershell
+# タスク定義を登録
+aws ecs register-task-definition --cli-input-json file://ecs/task-definition-updated.json --region ap-northeast-1
+```
+
+### 従来の手動ビルド方法（ローカルWindows環境）
+
+Windows環境で直接ビルドする場合：
+
+#### 1. 前提条件
+
+- **Docker Desktop** (Windows containers対応)
+- **MinGW-w64** または **w64devkit** (Windowsローカルビルド用)
+
+#### 2. テスト実行ファイルのビルド
 
 ```powershell
 # executionディレクトリに移動
@@ -56,7 +89,7 @@ cd execution
 .\docker-build.bat
 ```
 
-### 3. Dockerイメージの作成
+#### 3. Dockerイメージの作成
 
 ```powershell
 # imageディレクトリに移動
@@ -66,14 +99,14 @@ cd ..\image
 .\build-image.bat
 ```
 
-### 4. ECRへのデプロイ（オプション）
+#### 4. ECRへのデプロイ（オプション）
 
 ```powershell
 # AWSアカウントIDを指定してECRにプッシュ（ap-northeast-1リージョン）
-.\push-to-ecr.bat 123456789012
+.\push-to-ecr.bat YOUR_AWS_ACCOUNT_ID
 
 # リージョンとリポジトリ名も明示的に指定
-.\push-to-ecr.bat 123456789012 ap-northeast-1 my-countdown-test
+.\push-to-ecr.bat YOUR_AWS_ACCOUNT_ID ap-northeast-1 my-countdown-test
 ```
 
 ## 検証項目
@@ -127,7 +160,7 @@ countdown.exe 300   # 300秒カウントダウン（30秒間隔）
 ### Windows環境推奨：w64devkit
 
 1. [w64devkit Releases](https://github.com/skeeto/w64devkit/releases)から最新版をダウンロード
-2. 任意のフォルダに解凍（例：`C:\w64devkit`）
+2. 任意のフォルダに解凍（例：`C:\tools\w64devkit`）
 3. `w64devkit.exe`を実行してターミナルを開く
 4. プロジェクトフォルダに移動してビルド実行
 
@@ -137,13 +170,18 @@ Docker Desktopがインストールされていれば、どの環境でもWindow
 
 ## ドキュメント
 
-詳細な仕様については以下のドキュメントを参照してください：
+詳細な仕様と手順については以下のドキュメントを参照してください：
 
+### AWS CodeBuild・CodeDeploy関連
+- **[CodeBuild実行手順](docs/CodeBuild実行手順.md)** - AWS CodeBuildを使用した自動ビルド・デプロイの詳細手順
+- **[CodeBuild_CodeDeploy導入ガイド](docs/CodeBuild_CodeDeploy導入ガイド.md)** - LinuxでのWindowsイメージビルド問題の解決策
+
+### 仕様書・従来手順
 - [ECS仕様](docs/ECS仕様.md) - Amazon ECSクラスタ・タスク構成仕様
 - [テストイメージ仕様](docs/テストイメージ仕様.md) - Dockerイメージの詳細設計
 - [テスト実行ファイル仕様](docs/テスト実行ファイル仕様.md) - カウントダウンプログラムの機能仕様
-- [execution/README.md](execution/README.md) - ビルド手順の詳細
-- [image/README.md](image/README.md) - イメージ作成・デプロイ手順
+- [execution/README.md](execution/README.md) - ローカルビルド手順の詳細
+- [image/README.md](image/README.md) - 手動イメージ作成・デプロイ手順
 
 ## ライセンス
 

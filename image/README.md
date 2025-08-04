@@ -30,10 +30,10 @@ chmod +x build-image.sh
 #### Windows環境
 ```cmd
 # AWSアカウントIDを指定
-push-to-ecr.bat 123456789012
+push-to-ecr.bat YOUR_AWS_ACCOUNT_ID
 
 # リージョンとリポジトリ名も指定
-push-to-ecr.bat 123456789012 ap-northeast-1 my-countdown-test
+push-to-ecr.bat YOUR_AWS_ACCOUNT_ID ap-northeast-1 my-countdown-test
 ```
 
 #### Linux/macOS環境
@@ -41,10 +41,10 @@ push-to-ecr.bat 123456789012 ap-northeast-1 my-countdown-test
 chmod +x push-to-ecr.sh
 
 # AWSアカウントIDを指定
-./push-to-ecr.sh 123456789012
+./push-to-ecr.sh YOUR_AWS_ACCOUNT_ID
 
 # リージョンとリポジトリ名も指定
-./push-to-ecr.sh 123456789012 ap-northeast-1 my-countdown-test
+./push-to-ecr.sh YOUR_AWS_ACCOUNT_ID ap-northeast-1 my-countdown-test
 ```
 
 ## 前提条件

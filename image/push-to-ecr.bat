@@ -10,7 +10,7 @@ echo ==========================================
 
 REM Configuration - MODIFY THESE VALUES
 set AWS_REGION=ap-northeast-1
-set AWS_ACCOUNT_ID=123456789012
+set AWS_ACCOUNT_ID=YOUR_AWS_ACCOUNT_ID
 set ECR_REPOSITORY=countdown-test-windows
 set LOCAL_IMAGE_NAME=countdown-test-windows
 set LOCAL_IMAGE_TAG=latest
@@ -19,7 +19,7 @@ REM Parse command line arguments
 if "%1"=="" (
     echo Usage: %0 ^<aws-account-id^> [region] [repository-name]
     echo.
-    echo Example: %0 123456789012 ap-northeast-1 countdown-test-windows
+    echo Example: %0 YOUR_AWS_ACCOUNT_ID ap-northeast-1 countdown-test-windows
     echo.
     echo Current configuration:
     echo   Account ID: %AWS_ACCOUNT_ID%
