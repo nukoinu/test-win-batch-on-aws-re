@@ -10,7 +10,7 @@ echo "ECR Push Script - Windows Image"
 echo "=========================================="
 
 # Configuration - MODIFY THESE VALUES
-AWS_REGION="${AWS_REGION:-us-east-1}"
+AWS_REGION="${AWS_REGION:-ap-northeast-1}"
 AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID:-123456789012}"
 ECR_REPOSITORY="${ECR_REPOSITORY:-countdown-test-windows}"
 LOCAL_IMAGE_NAME="countdown-test-windows"
@@ -20,7 +20,7 @@ LOCAL_IMAGE_TAG="latest"
 if [ $# -eq 0 ]; then
     echo "Usage: $0 <aws-account-id> [region] [repository-name]"
     echo
-    echo "Example: $0 123456789012 us-east-1 countdown-test-windows"
+    echo "Example: $0 123456789012 ap-northeast-1 countdown-test-windows"
     echo
     echo "Current configuration:"
     echo "  Account ID: $AWS_ACCOUNT_ID"

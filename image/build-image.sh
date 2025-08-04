@@ -32,11 +32,11 @@ fi
 echo "Note: Building Windows containers requires Docker Desktop running on Windows"
 echo "If you're on Linux/macOS, you'll need to use a Windows Docker host"
 
-# Check if countdown.exe exists in test-exec directory
-if [ ! -f "../test-exec/countdown.exe" ]; then
-    echo "countdown.exe not found in test-exec directory"
+# Check if countdown.exe exists in execution directory
+if [ ! -f "../execution/countdown.exe" ]; then
+    echo "countdown.exe not found in execution directory"
     echo "Building from source using cross-compilation..."
-    pushd ../test-exec
+    pushd ../execution
     ./build.sh
     if [ $? -ne 0 ]; then
         echo "Error: Failed to build countdown.exe"

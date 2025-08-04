@@ -33,7 +33,7 @@ chmod +x build-image.sh
 push-to-ecr.bat 123456789012
 
 # リージョンとリポジトリ名も指定
-push-to-ecr.bat 123456789012 us-west-2 my-countdown-test
+push-to-ecr.bat 123456789012 ap-northeast-1 my-countdown-test
 ```
 
 #### Linux/macOS環境
@@ -44,7 +44,7 @@ chmod +x push-to-ecr.sh
 ./push-to-ecr.sh 123456789012
 
 # リージョンとリポジトリ名も指定
-./push-to-ecr.sh 123456789012 us-west-2 my-countdown-test
+./push-to-ecr.sh 123456789012 ap-northeast-1 my-countdown-test
 ```
 
 ## 前提条件
@@ -61,10 +61,10 @@ chmod +x push-to-ecr.sh
 ### ディレクトリ構造
 ```
 test-win-batch-on-aws-re/
-├── test-exec/
+├── execution/
 │   ├── countdown.exe    # ビルド済み実行ファイル
 │   └── countdown.cpp    # ソースコード
-└── test-image/          # このディレクトリ
+└── image/               # このディレクトリ
     ├── Dockerfile
     ├── build-image.bat
     ├── build-image.sh
@@ -88,9 +88,9 @@ Docker DesktopでWindows Containersモードに切り替えてください：
 ```
 
 ### countdown.exe不存在
-test-execディレクトリでビルドを実行してください：
+executionディレクトリでビルドを実行してください：
 ```cmd
-cd ..\test-exec
+cd ..\execution
 build.bat
 ```
 

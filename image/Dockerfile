@@ -7,9 +7,9 @@ FROM mcr.microsoft.com/windows/server:ltsc2022 as builder
 # Set working directory
 WORKDIR C:\build
 
-# Copy source code and executable from test-exec directory
-COPY ../test-exec/countdown.cpp .
-COPY ../test-exec/countdown.exe .
+# Copy source code and executable from execution directory
+COPY ../execution/countdown.cpp .
+COPY ../execution/countdown.exe .
 
 # Stage 2: Runtime stage
 FROM mcr.microsoft.com/windows/server:ltsc2022 as runtime

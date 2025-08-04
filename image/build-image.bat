@@ -38,10 +38,10 @@ if errorlevel 1 (
     timeout /t 10 /nobreak >nul
 )
 
-REM Check if countdown.exe exists in test-exec directory
-if not exist "..\test-exec\countdown.exe" (
-    echo countdown.exe not found in test-exec directory, building from source...
-    pushd ..\test-exec
+REM Check if countdown.exe exists in execution directory
+if not exist "..\execution\countdown.exe" (
+    echo countdown.exe not found in execution directory, building from source...
+    pushd ..\execution
     call build.bat
     if errorlevel 1 (
         echo Error: Failed to build countdown.exe
