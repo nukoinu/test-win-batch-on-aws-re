@@ -34,7 +34,11 @@ phases:
       - Get-ChildItem -Path execution
       - echo "Using pre-built countdown.exe..."
       - Set-Location -Path execution
-      - if (-not (Test-Path -Path "countdown.exe")) { Write-Error "Error: countdown.exe not found!"; exit 1 }
+      - |
+        if (-not (Test-Path -Path "countdown.exe")) {
+            echo "Error: countdown.exe not found!"
+            exit 1
+        }
       - echo "countdown.exe found, copying to image directory..."
       - Copy-Item -Path "countdown.exe" -Destination "..\image\"
       - Set-Location -Path "..\image"
