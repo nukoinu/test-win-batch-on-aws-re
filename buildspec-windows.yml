@@ -20,8 +20,35 @@ phases:
       - echo "AWS_DEFAULT_REGION=$env:AWS_DEFAULT_REGION"
       - echo "CODEBUILD_RESOLVED_SOURCE_VERSION=$env:CODEBUILD_RESOLVED_SOURCE_VERSION"
       - echo "Logging in to ECR..."
-      - aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin "$env:AWS_ACCOUNT_ID.dkr.ecr.ap-northeast-1.amazonaws.com"
-      - echo "ECR login completed"
+      - |
+        # Dockerサービス状態確認
+        echo "Checking Docker service..."
+        docker info
+        
+        # 認証情報とリージョンを準備
+        $region = "ap-northeast-1"
+        $ecrUrl = "$env:AWS_ACCOUNT_ID.dkr.ecr.$region.amazonaws.com"
+        echo "Using ECR URL: $ecrUrl"
+        
+        # IAM認証情報のテスト
+        echo "Testing AWS credentials..."
+        aws sts get-caller-identity
+        
+        # 直接ECRへのアクセステスト
+        echo "Testing ECR access..."
+        aws ecr describe-repositories --region $region
+        
+        # コンテナレジストリのログイン方法を変更
+        echo "Trying alternative login method..."
+        $loginCmd = aws ecr get-login --region $region --no-include-email
+        echo "Login command generated (masked): $($loginCmd -replace '-p [^ ]+', '-p ***')"
+        Invoke-Expression $loginCmd
+        
+        # 前のアプローチも試行（成功率向上のため）
+        echo "Trying standard login approach as well..."
+        $password = aws ecr get-login-password --region $region
+        $password | docker login --username AWS --password-stdin $ecrUrl
+      - echo "ECR login attempts completed"
       - $env:IMAGE_TAG = $env:CODEBUILD_RESOLVED_SOURCE_VERSION.Substring(0, 7)
       - echo "Image tag will be $env:IMAGE_TAG"
       
