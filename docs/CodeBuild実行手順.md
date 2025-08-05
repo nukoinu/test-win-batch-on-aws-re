@@ -63,8 +63,16 @@ aws ecs register-task-definition --cli-input-json file://ecs/task-definition-upd
 # S3バケット作成
 aws s3 mb s3://YOUR_AWS_ACCOUNT_ID-codebuild-source --region ap-northeast-1
 
-# プロジェクトをzip化してアップロード
-Compress-Archive -Path . -DestinationPath countdown-test-source.zip
+# プロジェクトをzip化してアップロード（必要なファイルのみを含める）
+$filesToInclude = @(
+    "buildspec.yml",
+    "buildspec-windows.yml", 
+    "execution\*",
+    "image\*",
+    "ecs\*",
+    "codebuild\*"
+)
+Compress-Archive -Path $filesToInclude -DestinationPath countdown-test-source.zip -Force
 aws s3 cp countdown-test-source.zip s3://YOUR_AWS_ACCOUNT_ID-codebuild-source/ --region ap-northeast-1
 ```
 
@@ -127,7 +135,15 @@ aws iam put-role-policy --role-name codebuild-windows-countdown-service-role --p
 
 # S3バケット作成とソースアップロード
 aws s3 mb s3://YOUR_AWS_ACCOUNT_ID-codebuild-source --region ap-northeast-1
-Compress-Archive -Path . -DestinationPath countdown-test-source.zip
+$filesToInclude = @(
+    "buildspec.yml",
+    "buildspec-windows.yml", 
+    "execution\*",
+    "image\*",
+    "ecs\*",
+    "codebuild\*"
+)
+Compress-Archive -Path $filesToInclude -DestinationPath countdown-test-source.zip -Force
 aws s3 cp countdown-test-source.zip s3://YOUR_AWS_ACCOUNT_ID-codebuild-source/ --region ap-northeast-1
 
 # プロジェクトの作成
@@ -196,8 +212,16 @@ aws logs get-log-events --log-group-name "/aws/codebuild/windows-countdown-build
 ### プロジェクトの更新
 
 ```powershell
-# プロジェクトを更新してS3に再アップロード
-Compress-Archive -Path . -DestinationPath countdown-test-source.zip -Force
+# プロジェクトを更新してS3に再アップロード（必要なファイルのみ）
+$filesToInclude = @(
+    "buildspec.yml",
+    "buildspec-windows.yml", 
+    "execution\*",
+    "image\*",
+    "ecs\*",
+    "codebuild\*"
+)
+Compress-Archive -Path $filesToInclude -DestinationPath countdown-test-source.zip -Force
 aws s3 cp countdown-test-source.zip s3://YOUR_AWS_ACCOUNT_ID-codebuild-source/ --region ap-northeast-1
 ```
 
