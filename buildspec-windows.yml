@@ -10,7 +10,7 @@ phases:
       - echo "Logging in to Amazon ECR..."
       - aws --version
       - echo "Logging in to ECR repository %REPOSITORY_URI%"
-      - for /f "tokens=*" %%i in ('aws ecr get-login-password --region %AWS_DEFAULT_REGION%') do set ECR_PASSWORD=%%i
+      - 'for /f "tokens=*" %%i in (''aws ecr get-login-password --region %AWS_DEFAULT_REGION%'') do set ECR_PASSWORD=%%i'
       - echo %ECR_PASSWORD% | docker login --username AWS --password-stdin %REPOSITORY_URI%
       - echo "Repository login completed"
       - set IMAGE_TAG=%CODEBUILD_RESOLVED_SOURCE_VERSION:~0,7%
