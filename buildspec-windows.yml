@@ -9,7 +9,7 @@ phases:
       - echo "Build started on %date% %time%"
       - echo "Logging in to Amazon ECR..."
       - aws --version
-      - echo "Debug: Environment variables"
+      - echo Debug Environment variables
       - echo "AWS_ACCOUNT_ID=%AWS_ACCOUNT_ID%"
       - echo "REPOSITORY_URI=%REPOSITORY_URI%"
       - echo "AWS_DEFAULT_REGION=%AWS_DEFAULT_REGION%"
