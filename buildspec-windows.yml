@@ -15,10 +15,10 @@ phases:
       - echo "Logging in to Amazon ECR..."
       - aws --version
       - echo "Debug Environment variables:"
-      - echo "AWS_ACCOUNT_ID=$env:AWS_ACCOUNT_ID"
-      - echo "REPOSITORY_URI=$env:REPOSITORY_URI"
-      - echo "AWS_DEFAULT_REGION=$env:AWS_DEFAULT_REGION"
-      - echo "CODEBUILD_RESOLVED_SOURCE_VERSION=$env:CODEBUILD_RESOLVED_SOURCE_VERSION"
+      - Write-Host "AWS_ACCOUNT_ID: $($env:AWS_ACCOUNT_ID)"
+      - Write-Host "REPOSITORY_URI: $($env:REPOSITORY_URI)"
+      - Write-Host "AWS_DEFAULT_REGION: $($env:AWS_DEFAULT_REGION)"
+      - Write-Host "CODEBUILD_RESOLVED_SOURCE_VERSION: $($env:CODEBUILD_RESOLVED_SOURCE_VERSION)"
       - echo "Logging in to ECR..."
       - echo "Docker Version:"
       - docker --version
@@ -42,10 +42,16 @@ phases:
       - Invoke-Expression $loginCmd
       - echo "Trying standard login approach as well:"
       - $password = aws ecr get-login-password --region $region
-      - $password | docker login --username AWS --password-stdin $ecrUrl
+      - $ecrLoginUrl = "$env:AWS_ACCOUNT_ID.dkr.ecr.$region.amazonaws.com"
+      - $password | docker login --username AWS --password-stdin $ecrLoginUrl
       - echo "ECR login attempts completed"
-      - $env:IMAGE_TAG = $env:CODEBUILD_RESOLVED_SOURCE_VERSION.Substring(0, 7)
-      - echo "Image tag will be $env:IMAGE_TAG"
+      - |
+        if ($env:CODEBUILD_RESOLVED_SOURCE_VERSION) {
+            $env:IMAGE_TAG = $env:CODEBUILD_RESOLVED_SOURCE_VERSION.Substring(0, 7)
+        } else {
+            $env:IMAGE_TAG = "latest"
+        }
+      - Write-Host "Image tag will be: $($env:IMAGE_TAG)"
       
   build:
     commands:
@@ -59,28 +65,35 @@ phases:
       - Set-Location -Path execution
       - |
         if (-not (Test-Path -Path "countdown.exe")) {
-            echo "Error: countdown.exe not found!"
+            Write-Host "Error: countdown.exe not found!"
             exit 1
+        } else {
+            Write-Host "countdown.exe found"
         }
       - echo "countdown.exe found, copying to image directory..."
       - Copy-Item -Path "countdown.exe" -Destination "..\image\"
       - Set-Location -Path "..\image"
       - echo "Building Docker image..."
-      - docker build -t "$env:REPOSITORY_URI`:latest" .
-      - docker build -t "$env:REPOSITORY_URI`:$env:IMAGE_TAG" .
+      - $latestTag = "$env:REPOSITORY_URI" + ":latest"
+      - $versionTag = "$env:REPOSITORY_URI" + ":$env:IMAGE_TAG"
+      - docker build -t $latestTag .
+      - docker build -t $versionTag .
       - echo "Build completed on $(Get-Date)"
       
   post_build:
     commands:
       - echo "Post build phase started on $(Get-Date)"
       - echo "Pushing Docker images to ECR..."
-      - docker push "$env:REPOSITORY_URI`:latest"
-      - docker push "$env:REPOSITORY_URI`:$env:IMAGE_TAG"
+      - $latestTag = "$env:REPOSITORY_URI" + ":latest"
+      - $versionTag = "$env:REPOSITORY_URI" + ":$env:IMAGE_TAG"
+      - docker push $latestTag
+      - docker push $versionTag
       - echo "Creating image definitions file..."
       - |
-        $imageDefinition = @"
-        [{"name":"countdown-container","imageUri":"$env:REPOSITORY_URI`:$env:IMAGE_TAG"}]
-        "@
+        $imageDefinition = @'
+        [{"name":"countdown-container","imageUri":"REPOSITORY_URI:IMAGE_TAG"}]
+        '@
+        $imageDefinition = $imageDefinition.Replace('REPOSITORY_URI', $env:REPOSITORY_URI).Replace('IMAGE_TAG', $env:IMAGE_TAG)
         Set-Content -Path imagedefinitions.json -Value $imageDefinition
       - echo "Image definitions file created:"
       - Get-Content -Path imagedefinitions.json
