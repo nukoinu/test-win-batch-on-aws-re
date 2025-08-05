@@ -12,8 +12,13 @@ phases:
       - echo "Logging in to ECR repository %REPOSITORY_URI%"
       - aws ecr get-login-password --region ap-northeast-1 > ecr_password.txt
       - set /p ECR_PASSWORD=<ecr_password.txt
-      - echo %ECR_PASSWORD% | docker login --username AWS --password-stdin %REPOSITORY_URI%
+      - echo %REPOSITORY_URI% > temp_uri.txt
+      - powershell -Command "(Get-Content temp_uri.txt).Split('/')[0]" > ecr_registry.txt
+      - set /p ECR_REGISTRY=<ecr_registry.txt
+      - echo %ECR_PASSWORD% | docker login --username AWS --password-stdin %ECR_REGISTRY%
       - del ecr_password.txt
+      - del temp_uri.txt
+      - del ecr_registry.txt
       - echo "Repository login completed"
       - set IMAGE_TAG=%CODEBUILD_RESOLVED_SOURCE_VERSION:~0,7%
       - echo "Image tag will be %IMAGE_TAG%"
