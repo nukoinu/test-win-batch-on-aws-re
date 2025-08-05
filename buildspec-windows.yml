@@ -26,7 +26,7 @@ phases:
       - dir execution
       - echo "Using pre-built countdown.exe..."
       - cd execution
-      - if not exist "countdown.exe" (echo "Error: countdown.exe not found!" && exit /b 1)
+      - 'if not exist "countdown.exe" (echo "Error: countdown.exe not found!" && exit /b 1)'
       - echo "countdown.exe found, copying to image directory..."
       - copy countdown.exe ..\image\
       - cd ..\image
