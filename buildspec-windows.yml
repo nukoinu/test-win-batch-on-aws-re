@@ -10,8 +10,8 @@ phases:
   pre_build:
     commands:
       - echo "Logging in to AWS ECR..."
-      - echo "${env:AWS_ACCOUNT_ID} + ".dkr.ecr." + ${env:AWS_DEFAULT_REGION} + ".amazonaws.com"
-      - aws ecr get-login-password --region $env:AWS_DEFAULT_REGION | docker login --username AWS --password-stdin (${env:AWS_ACCOUNT_ID} + ".dkr.ecr." + ${env:AWS_DEFAULT_REGION} + ".amazonaws.com")
+      - echo "$env:AWS_ACCOUNT_ID + ".dkr.ecr." + $env:AWS_DEFAULT_REGION + ".amazonaws.com"
+      - aws ecr get-login-password --region $env:AWS_DEFAULT_REGION | docker login --username AWS --password-stdin ($env:AWS_ACCOUNT_ID + ".dkr.ecr." + $env:AWS_DEFAULT_REGION + ".amazonaws.com")
 
   build:
     commands:
