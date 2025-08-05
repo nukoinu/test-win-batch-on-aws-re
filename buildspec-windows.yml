@@ -1,7 +1,6 @@
+
 # Windows専用 buildspec for CodeBuild
 # Windows Server 2022 Container環境でのDockerイメージビルド
-
-
 version: 0.2
 
 env:
@@ -36,12 +35,11 @@ phases:
       - docker push "$env:REPOSITORY_URI:$env:IMAGE_TAG"
       - echo "Creating image definitions file..."
       - |
-        $json = '[{"name":"countdown-container","imageUri":"' + $env:REPOSITORY_URI + ':' + $env:IMAGE_TAG + '"}]'
-        Set-Content -Path imagedefinitions.json -Value $json
+          $json = '[{"name":"countdown-container","imageUri":"' + $env:REPOSITORY_URI + ':' + $env:IMAGE_TAG + '"}]'
+          Set-Content -Path imagedefinitions.json -Value $json
       - echo "Image definitions file created:"
       - Get-Content -Path imagedefinitions.json
       - echo "Post build completed on $(Get-Date)"
-
 artifacts:
   files:
     - imagedefinitions.json
