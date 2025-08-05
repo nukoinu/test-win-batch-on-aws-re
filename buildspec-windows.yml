@@ -7,6 +7,13 @@ env:
   shell: powershell
 
 phases:
+  install:
+    runtime-versions:
+      docker: 20
+    commands:
+      - echo "Installing AWS CLI if not present..."
+      - if (-not (Get-Command aws -ErrorAction SilentlyContinue)) { Invoke-WebRequest "https://awscli.amazonaws.com/AWSCLIV2.msi" -OutFile "AWSCLIV2.msi"; Start-Process msiexec.exe -Wait -ArgumentList '/i AWSCLIV2.msi /quiet' }
+
   pre_build:
     commands:
       - echo "Logging in to AWS ECR..."
