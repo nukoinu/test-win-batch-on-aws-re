@@ -4,54 +4,60 @@
 version: 0.2
 
 phases:
+  env:
+    shell: powershell
   pre_build:
     commands:
-      - echo "Build started on %date% %time%"
+      - echo "Build started on $(Get-Date)"
       - echo "Windows Version:"
-      - ver
+      - Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion, OsHardwareAbstractionLayer
       - echo "Logging in to Amazon ECR..."
       - aws --version
       - echo "Debug Environment variables:"
-      - echo "AWS_ACCOUNT_ID=%AWS_ACCOUNT_ID%"
-      - echo "REPOSITORY_URI=%REPOSITORY_URI%"
-      - echo "AWS_DEFAULT_REGION=%AWS_DEFAULT_REGION%"
-      - echo "CODEBUILD_RESOLVED_SOURCE_VERSION=%CODEBUILD_RESOLVED_SOURCE_VERSION%"
+      - echo "AWS_ACCOUNT_ID=$env:AWS_ACCOUNT_ID"
+      - echo "REPOSITORY_URI=$env:REPOSITORY_URI"
+      - echo "AWS_DEFAULT_REGION=$env:AWS_DEFAULT_REGION"
+      - echo "CODEBUILD_RESOLVED_SOURCE_VERSION=$env:CODEBUILD_RESOLVED_SOURCE_VERSION"
       - echo "Logging in to ECR..."
-      - aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin %AWS_ACCOUNT_ID%.dkr.ecr.ap-northeast-1.amazonaws.com
+      - aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin "$env:AWS_ACCOUNT_ID.dkr.ecr.ap-northeast-1.amazonaws.com"
       - echo "ECR login completed"
-      - set IMAGE_TAG=%CODEBUILD_RESOLVED_SOURCE_VERSION:~0,7%
-      - echo Image tag will be %IMAGE_TAG%
+      - $env:IMAGE_TAG = $env:CODEBUILD_RESOLVED_SOURCE_VERSION.Substring(0, 7)
+      - echo "Image tag will be $env:IMAGE_TAG"
       
   build:
     commands:
-      - echo "Build phase started on %date% %time%"
+      - echo "Build phase started on $(Get-Date)"
       - echo "Building Windows Docker image..."
       - echo "Current directory:"
-      - dir
+      - Get-ChildItem
       - echo "Checking execution directory:"
-      - dir execution
+      - Get-ChildItem -Path execution
       - echo "Using pre-built countdown.exe..."
-      - cd execution
-      - if not exist countdown.exe echo "Error: countdown.exe not found!" && exit /b 1
+      - Set-Location -Path execution
+      - if (-not (Test-Path -Path "countdown.exe")) { Write-Error "Error: countdown.exe not found!"; exit 1 }
       - echo "countdown.exe found, copying to image directory..."
-      - copy countdown.exe ..\image\
-      - cd ..\image
+      - Copy-Item -Path "countdown.exe" -Destination "..\image\"
+      - Set-Location -Path "..\image"
       - echo "Building Docker image..."
-      - docker build -t %REPOSITORY_URI%:latest .
-      - docker build -t %REPOSITORY_URI%:%IMAGE_TAG% .
-      - echo "Build completed on %date% %time%"
+      - docker build -t "$env:REPOSITORY_URI`:latest" .
+      - docker build -t "$env:REPOSITORY_URI`:$env:IMAGE_TAG" .
+      - echo "Build completed on $(Get-Date)"
       
   post_build:
     commands:
-      - echo "Post build phase started on %date% %time%"
+      - echo "Post build phase started on $(Get-Date)"
       - echo "Pushing Docker images to ECR..."
-      - docker push %REPOSITORY_URI%:latest
-      - docker push %REPOSITORY_URI%:%IMAGE_TAG%
+      - docker push "$env:REPOSITORY_URI`:latest"
+      - docker push "$env:REPOSITORY_URI`:$env:IMAGE_TAG"
       - echo "Creating image definitions file..."
-      - echo [{"name":"countdown-container","imageUri":"%REPOSITORY_URI%:%IMAGE_TAG%"}] > imagedefinitions.json
+      - |
+        $imageDefinition = @"
+        [{"name":"countdown-container","imageUri":"$env:REPOSITORY_URI`:$env:IMAGE_TAG"}]
+        "@
+        Set-Content -Path imagedefinitions.json -Value $imageDefinition
       - echo "Image definitions file created:"
-      - type imagedefinitions.json
-      - echo "Post build completed on %date% %time%"
+      - Get-Content -Path imagedefinitions.json
+      - echo "Post build completed on $(Get-Date)"
 
 artifacts:
   files:
