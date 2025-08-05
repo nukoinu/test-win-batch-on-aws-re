@@ -1,5 +1,5 @@
 # Windows専用 buildspec for CodeBuild
-# Windows Server 2019 Container環境でのDockerイメージビルド
+# Windows Server 2022 Container環境でのDockerイメージビルド
 
 version: 0.2
 
@@ -7,20 +7,20 @@ phases:
   pre_build:
     commands:
       - echo "Build started on %date% %time%"
+      - echo "Windows Version:"
+      - ver
       - echo "Logging in to Amazon ECR..."
       - aws --version
-      - echo Debug Environment variables
+      - echo "Debug Environment variables:"
       - echo "AWS_ACCOUNT_ID=%AWS_ACCOUNT_ID%"
       - echo "REPOSITORY_URI=%REPOSITORY_URI%"
       - echo "AWS_DEFAULT_REGION=%AWS_DEFAULT_REGION%"
-      - set AWS
-      - echo "Logging in to ECR repository %REPOSITORY_URI%"
-      - echo "Trying with $ syntax:" $AWS_ACCOUNT_ID
-      - echo "Trying with percent syntax:" %AWS_ACCOUNT_ID%
+      - echo "CODEBUILD_RESOLVED_SOURCE_VERSION=%CODEBUILD_RESOLVED_SOURCE_VERSION%"
+      - echo "Logging in to ECR..."
       - aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin %AWS_ACCOUNT_ID%.dkr.ecr.ap-northeast-1.amazonaws.com
-      - echo "Repository login completed"
+      - echo "ECR login completed"
       - set IMAGE_TAG=%CODEBUILD_RESOLVED_SOURCE_VERSION:~0,7%
-      - echo "Image tag will be %IMAGE_TAG%"
+      - echo Image tag will be %IMAGE_TAG%
       
   build:
     commands:
@@ -32,7 +32,7 @@ phases:
       - dir execution
       - echo "Using pre-built countdown.exe..."
       - cd execution
-      - 'if not exist "countdown.exe" (echo "Error: countdown.exe not found!" && exit /b 1)'
+      - if not exist countdown.exe echo "Error: countdown.exe not found!" && exit /b 1
       - echo "countdown.exe found, copying to image directory..."
       - copy countdown.exe ..\image\
       - cd ..\image
