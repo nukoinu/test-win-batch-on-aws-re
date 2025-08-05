@@ -1,6 +1,7 @@
 # Windows専用 buildspec for CodeBuild
 # Windows Server 2022 Container環境でのDockerイメージビルド
 
+
 version: 0.2
 
 env:
@@ -10,91 +11,33 @@ phases:
   pre_build:
     commands:
       - echo "Build started on $(Get-Date)"
-      - echo "Windows Version:"
-      - Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion, OsHardwareAbstractionLayer
-      - echo "Logging in to Amazon ECR..."
       - aws --version
-      - echo "Debug Environment variables:"
-      - Write-Host "AWS_ACCOUNT_ID: $($env:AWS_ACCOUNT_ID)"
-      - Write-Host "REPOSITORY_URI: $($env:REPOSITORY_URI)"
-      - Write-Host "AWS_DEFAULT_REGION: $($env:AWS_DEFAULT_REGION)"
-      - Write-Host "CODEBUILD_RESOLVED_SOURCE_VERSION: $($env:CODEBUILD_RESOLVED_SOURCE_VERSION)"
-      - echo "Logging in to ECR..."
-      - echo "Docker Version:"
-      - docker --version
-      - echo "Checking Docker service status:"
-      - Get-Service -Name docker -ErrorAction SilentlyContinue | Select-Object Name, Status
-      - echo "Testing Docker basic functionality:"
-      - docker ps
-      - echo "Container OS Environment:"
-      - Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" | Select-Object ProductName, CurrentBuildNumber
       - $region = "ap-northeast-1"
       - $ecrUrl = "$env:AWS_ACCOUNT_ID.dkr.ecr.$region.amazonaws.com"
-      - echo "Using ECR URL: $ecrUrl"
-        
-      - echo "Testing AWS credentials:"
-      - aws sts get-caller-identity
-      - echo "Testing ECR access:"
-      - aws ecr describe-repositories --region $region
-      - echo "Trying alternative login method:"
-      - $loginCmd = aws ecr get-login --region $region --no-include-email
-      - echo "Login command generated"
-      - Invoke-Expression $loginCmd
-      - echo "Trying standard login approach as well:"
+      - echo "Logging in to ECR: $ecrUrl"
       - $password = aws ecr get-login-password --region $region
-      - $ecrLoginUrl = "$env:AWS_ACCOUNT_ID.dkr.ecr.$region.amazonaws.com"
-      - $password | docker login --username AWS --password-stdin $ecrLoginUrl
-      - echo "ECR login attempts completed"
-      - |
-        if ($env:CODEBUILD_RESOLVED_SOURCE_VERSION) {
-            $env:IMAGE_TAG = $env:CODEBUILD_RESOLVED_SOURCE_VERSION.Substring(0, 7)
-        } else {
-            $env:IMAGE_TAG = "latest"
-        }
-      - Write-Host "Image tag will be: $($env:IMAGE_TAG)"
-      
+      - $password | docker login --username AWS --password-stdin $ecrUrl
+      - $env:IMAGE_TAG = $env:CODEBUILD_RESOLVED_SOURCE_VERSION.Substring(0, 7)
+      - echo "Image tag: $($env:IMAGE_TAG)"
+
   build:
     commands:
       - echo "Build phase started on $(Get-Date)"
-      - echo "Building Windows Docker image..."
-      - echo "Current directory:"
-      - Get-ChildItem
-      - echo "Checking execution directory:"
-      - Get-ChildItem -Path execution
-      - echo "Using pre-built countdown.exe..."
-      - Set-Location -Path execution
-      - |
-        if (-not (Test-Path -Path "countdown.exe")) {
-            Write-Host "Error: countdown.exe not found!"
-            exit 1
-        } else {
-            Write-Host "countdown.exe found"
-        }
-      - echo "countdown.exe found, copying to image directory..."
-      - Copy-Item -Path "countdown.exe" -Destination "..\image\"
-      - Set-Location -Path "..\image"
-      - echo "Building Docker image..."
-      - $latestTag = "$env:REPOSITORY_URI" + ":latest"
-      - $versionTag = "$env:REPOSITORY_URI" + ":$env:IMAGE_TAG"
-      - docker build -t $latestTag .
-      - docker build -t $versionTag .
+      - Copy-Item -Path "execution\countdown.exe" -Destination "image\"
+      - Set-Location -Path "image"
+      - docker build -t "$env:REPOSITORY_URI:latest" .
+      - docker build -t "$env:REPOSITORY_URI:$env:IMAGE_TAG" .
       - echo "Build completed on $(Get-Date)"
-      
+
   post_build:
     commands:
       - echo "Post build phase started on $(Get-Date)"
-      - echo "Pushing Docker images to ECR..."
-      - $latestTag = "$env:REPOSITORY_URI" + ":latest"
-      - $versionTag = "$env:REPOSITORY_URI" + ":$env:IMAGE_TAG"
-      - docker push $latestTag
-      - docker push $versionTag
+      - docker push "$env:REPOSITORY_URI:latest"
+      - docker push "$env:REPOSITORY_URI:$env:IMAGE_TAG"
       - echo "Creating image definitions file..."
       - |
-        $imageDefinition = @'
-        [{"name":"countdown-container","imageUri":"REPOSITORY_URI:IMAGE_TAG"}]
-        '@
-        $imageDefinition = $imageDefinition.Replace('REPOSITORY_URI', $env:REPOSITORY_URI).Replace('IMAGE_TAG', $env:IMAGE_TAG)
-        Set-Content -Path imagedefinitions.json -Value $imageDefinition
+        $json = '[{"name":"countdown-container","imageUri":"' + $env:REPOSITORY_URI + ':' + $env:IMAGE_TAG + '"}]'
+        Set-Content -Path imagedefinitions.json -Value $json
       - echo "Image definitions file created:"
       - Get-Content -Path imagedefinitions.json
       - echo "Post build completed on $(Get-Date)"
