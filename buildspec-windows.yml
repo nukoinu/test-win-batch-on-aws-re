@@ -13,11 +13,9 @@ phases:
       - aws --version
       - $region = "ap-northeast-1"
       - $ecrUrl = "$env:AWS_ACCOUNT_ID.dkr.ecr.$region.amazonaws.com"
-      - echo "Logging in to ECR: $ecrUrl"
       - $password = aws ecr get-login-password --region $region
       - $password | docker login --username AWS --password-stdin $ecrUrl
       - $env:IMAGE_TAG = $env:CODEBUILD_RESOLVED_SOURCE_VERSION.Substring(0, 7)
-      - echo "Image tag: $($env:IMAGE_TAG)"
 
   build:
     commands:
