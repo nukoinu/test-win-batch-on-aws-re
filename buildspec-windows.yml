@@ -13,7 +13,7 @@ phases:
       - echo "AWS_ACCOUNT_ID=%AWS_ACCOUNT_ID%"
       - echo "REPOSITORY_URI=%REPOSITORY_URI%"
       - echo "AWS_DEFAULT_REGION=%AWS_DEFAULT_REGION%"
-      - set | findstr /i aws
+      - set AWS
       - echo "Logging in to ECR repository %REPOSITORY_URI%"
       - echo "Trying with $ syntax:" $AWS_ACCOUNT_ID
       - echo "Trying with percent syntax:" %AWS_ACCOUNT_ID%
